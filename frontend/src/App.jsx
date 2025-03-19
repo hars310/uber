@@ -4,6 +4,7 @@ import StartPage from './pages/StartPage'
 import UserRegister from './pages/UserRegister'
 import UserLogin from './pages/UserLogin'
 import { Toaster } from "react-hot-toast";
+import CaptainRegister from './pages/CaptainRegister'
 const App = () => {
 
   return (
@@ -13,6 +14,7 @@ const App = () => {
         <Route path='/' element={<StartPage />} />
         <Route path='/register' element={<UserRegister />} />
         <Route path='/login' element={<UserLogin />} />
+        <Route path='/captain-register' element={<CaptainRegister />} />
       </Routes>
     </div>
   )
