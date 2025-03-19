@@ -18,7 +18,7 @@ const CaptainRegister = () => {
   const [vehicleCapacity, setVehicleCapacity] = useState("");
   const [vehicleType, setVehicleType] = useState("");
 
-  const [captain, setCaptain] = useContext(CaptainDataContext)
+  const {setCaptain} = useContext(CaptainDataContext)
 
   const submitHandler = async (e) => {
     e.preventDefault();

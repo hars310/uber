@@ -10,11 +10,11 @@ const Captainlogin = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const { captain, setCaptain } = useContext(CaptainDataContext)
+  const { setCaptain } = useContext(CaptainDataContext)
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    const captain = {
+     const captainData = {
       email: email,
       password,
     };
@@ -22,7 +22,7 @@ const Captainlogin = () => {
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/captains/login`,
-        captain
+        captainData
       );
 
       if (response.status === 200) {
@@ -85,7 +85,7 @@ const Captainlogin = () => {
         </form>
         <p className="text-center">
           Join a fleet?{" "}
-          <Link to="/captain-signup" className="text-blue-600">
+          <Link to="/captain-register" className="text-blue-600">
             Register as a Captain
           </Link>
         </p>
