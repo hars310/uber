@@ -8,6 +8,7 @@ import CaptainRegister from './pages/CaptainRegister'
 import Captainlogin from './pages/CaptainLogin'
 import UserProtectWrapper from './pages/UserProtectWrapper'
 import UserLogout from './pages/UserLogout'
+import Home from './pages/Home'
 const App = () => {
 
   return (
@@ -15,6 +16,7 @@ const App = () => {
     <Toaster />
       <Routes>
         <Route path='/' element={<StartPage />} />
+        <Route path='/home' element={<Home/>}/>
         <Route path='/register' element={<UserRegister />} />
         <Route path='/login' element={<UserLogin />} />
         <Route path='/captain-register' element={<CaptainRegister />} />
