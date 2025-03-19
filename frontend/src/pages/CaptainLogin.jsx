@@ -1,13 +1,16 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { CaptainDataContext } from '../context/CapatainContext'
 
 const Captainlogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+
+  const { captain, setCaptain } = useContext(CaptainDataContext)
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -24,6 +27,7 @@ const Captainlogin = () => {
 
       if (response.status === 200) {
         const data = response.data;
+        setCaptain(data.captain)
         localStorage.setItem("token", data.token);
         toast.success("Captain logged in successfully");
         setTimeout(() => navigate("/captain-home"), 300);

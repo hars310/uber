@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { CaptainDataContext } from "../context/CapatainContext";
 
 const CaptainRegister = () => {
   const navigate = useNavigate();
@@ -16,6 +17,8 @@ const CaptainRegister = () => {
   const [vehiclePlate, setVehiclePlate] = useState("");
   const [vehicleCapacity, setVehicleCapacity] = useState("");
   const [vehicleType, setVehicleType] = useState("");
+
+  const [captain, setCaptain] = useContext(CaptainDataContext)
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -42,6 +45,7 @@ const CaptainRegister = () => {
 
       if (response.status === 201) {
         const data = response.data;
+        setCaptain(data.captain)
         localStorage.setItem("token", data.token);
         toast.success("Captain account created successfully");
         setTimeout(() => navigate("/captain-home"), 300);
