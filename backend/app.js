@@ -1,26 +1,22 @@
-import express from 'express';
-import morgan from 'morgan';
-import dbconnection from './db/db.js';
-import cookieParser from 'cookie-parser';
-import cors from 'cors';
-dbconnection();
-
+const dotenv = require('dotenv');
+dotenv.config();
+const express = require('express');
+const cors = require('cors');
 const app = express();
+const cookieParser = require('cookie-parser');
+const connectToDb = require('./db/db');
+connectToDb();
 
-// it will log all the requests in the console
-app.use(morgan('dev'));
-
-// to use json and urlencoded 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(cors())
 
-// to use routes
+
+
 app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
+module.exports = app;
 
-
-export default app;
