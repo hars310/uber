@@ -6,6 +6,8 @@ import UserLogin from './pages/UserLogin'
 import { Toaster } from "react-hot-toast";
 import CaptainRegister from './pages/CaptainRegister'
 import Captainlogin from './pages/CaptainLogin'
+import UserProtectWrapper from './pages/UserProtectWrapper'
+import UserLogout from './pages/UserLogout'
 const App = () => {
 
   return (
@@ -17,6 +19,11 @@ const App = () => {
         <Route path='/login' element={<UserLogin />} />
         <Route path='/captain-register' element={<CaptainRegister />} />
         <Route path='/captain-login' element={<Captainlogin />} />
+        <Route path='/user/logout'
+          element={<UserProtectWrapper>
+            <UserLogout />
+          </UserProtectWrapper>
+          } />
       </Routes>
     </div>
   )
