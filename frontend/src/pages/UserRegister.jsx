@@ -2,12 +2,14 @@ import React, { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { UserDataContext } from '../context/UserContext'
 
 const UserRegister = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const { user, setUser } = useContext(UserDataContext)
 
   const navigate = useNavigate();
 
@@ -30,6 +32,7 @@ const UserRegister = () => {
 
       if (response.status === 201) {
         const data = response.data;
+        setUser(data.user);
         localStorage.setItem("token", data.token);
         toast.success("Account created successfully");
         setTimeout(() => {

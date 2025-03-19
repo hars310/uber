@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import toast from 'react-hot-toast'
+import { UserDataContext } from '../context/UserContext'
 
 const UserLogin = () => {
   const [ email, setEmail ] = useState('')
   const [ password, setPassword ] = useState('')
+  const { user, setUser } = useContext(UserDataContext)
   const navigate = useNavigate()
 
   const submitHandler = async (e) => {
@@ -22,6 +24,7 @@ const UserLogin = () => {
       
       if (response.status === 200) {
         const data = response.data;
+        setUser(data.user);
         localStorage.setItem('token', data.token);
         toast.success('Login successful');
         setTimeout(() => navigate('/home'), 300);
