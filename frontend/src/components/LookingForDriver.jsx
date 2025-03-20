@@ -10,7 +10,7 @@ const LookingForDriver = ({ selectedLocation, selectedVehicle }) => {
   // For demonstration, we use a timeout to simulate finding a driver.
   React.useEffect(() => {
     const timer = setTimeout(() => {
-      navigate("/ride-confirmation");  // Navigate to ride confirmation once the driver is found
+      navigate("/assigned-driver");  // Navigate to ride confirmation once the driver is found
     }, 5000);  // Simulating 5 seconds to find a driver
 
     return () => clearTimeout(timer);  // Clean up the timeout when the component is unmounted
