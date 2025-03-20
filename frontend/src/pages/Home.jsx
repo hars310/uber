@@ -14,6 +14,7 @@ const Home = () => {
 
   const [pickupLocation, setPickupLocation] = useState("");
   const [destinationLocation, setDestinationLocation] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState(null); // Track selected location
 
   useEffect(() => {
     if (!user || !token) {
@@ -31,9 +32,7 @@ const Home = () => {
 
   const handleGoButtonClick = () => {
     if (pickupLocation && destinationLocation) {
-      console.log(
-        `Navigating from: ${pickupLocation} to: ${destinationLocation}`
-      );
+      setSelectedLocation(true);
     } else {
       console.log("Please enter both pickup and destination locations");
     }
@@ -41,10 +40,15 @@ const Home = () => {
     setDestinationLocation("");
   };
 
+  // Handle click on a location
+  const handleLocationClick = (location) => {
+    setSelectedLocation(location);
+  };
+
   return (
     <div className="flex w-full h-screen">
       {/* Left Section */}
-      <div className="w-1/4  h-screen relative bg-white p-2">
+      <div className="w-1/4 h-screen relative bg-white p-2">
         <img
           className="absolute top-5 left-5 w-20 z-[1000]"
           src="uber-removebg-preview.png"
@@ -52,22 +56,24 @@ const Home = () => {
         />
 
         {/* Find Trip Form */}
-        <div className="pt-12 p-4 ">
-          <div className="h-full hidden">
-          <SearchRide
-            handlePickupChange={handlePickupChange}
-            handleDestinationChange={handleDestinationChange}
-            pickupLocation={pickupLocation}
-            destinationLocation={destinationLocation}
-            handleGoButtonClick={handleGoButtonClick}
-          />
-            <div className="h-2/3 bg-white">
-              <LocationSearchPanel />
-            </div>
-          </div>
-          <div className="mt-4">
-           <VehicleOptions/>
-          </div>
+        <div className="pt-12 p-4 h-full">
+          {/* Only show SearchRide and LocationSearchPanel when no location is selected */}
+          {!selectedLocation ? (
+            <>
+              <SearchRide
+                handlePickupChange={handlePickupChange}
+                handleDestinationChange={handleDestinationChange}
+                pickupLocation={pickupLocation}
+                destinationLocation={destinationLocation}
+                handleGoButtonClick={handleGoButtonClick}
+              />
+              <div className="h-2/3 bg-white">
+                <LocationSearchPanel onLocationClick={handleLocationClick} />
+              </div>
+            </>
+          ) : (
+            <VehicleOptions selectedLocation={selectedLocation} />
+          )}
         </div>
       </div>
 

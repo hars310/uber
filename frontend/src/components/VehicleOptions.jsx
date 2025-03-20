@@ -1,44 +1,47 @@
-import React from 'react';
-import VehicleOption from './VehicleOption';
+import React from "react";
+import VehicleOption from "./VehicleOption";
 
-const VehicleOptions = () => {
+const VehicleOptions = ({ selectedLocation }) => {
   const vehicleData = [
     {
-      vehicleType: 'UberGO',
+      vehicleType: "UberGO",
       capacity: 4,
-      time: '2 mins',
+      time: "2 mins",
       price: 400,
-      description: 'Affordable, compact Rides',
-      imageSrc: 'uber-car.png'
+      description: "Affordable, compact Rides",
+      imageSrc: "uber-car.png",
     },
     {
-      vehicleType: 'UberMoto',
+      vehicleType: "UberMoto",
       capacity: 6,
-      time: '5 mins',
+      time: "5 mins",
       price: 650,
-      description: 'Spacious, large rides',
-      imageSrc: 'uber-bike.png'
+      description: "Spacious, large rides",
+      imageSrc: "uber-bike.png",
     },
     {
-      vehicleType: 'Uber Lux',
+      vehicleType: "Uber Lux",
       capacity: 4,
-      time: '8 mins',
+      time: "8 mins",
       price: 1200,
-      description: 'Premium, luxury rides',
-      imageSrc: 'uber-car.png'
+      description: "Premium, luxury rides",
+      imageSrc: "uber-car.png",
     },
     {
-      vehicleType: 'UberBike',
+      vehicleType: "UberBike",
       capacity: 3,
-      time: '3 mins',
+      time: "3 mins",
       price: 200,
-      description: 'Shared rides with others',
-      imageSrc: 'uber-bike.png'
-    }
+      description: "Shared rides with others",
+      imageSrc: "uber-bike.png",
+    },
   ];
 
   return (
     <div>
+      <h2 className="text-xl font-bold mb-4">
+        Vehicle options for: {selectedLocation}
+      </h2>
       {vehicleData.map((vehicle, index) => (
         <VehicleOption
           key={index}
