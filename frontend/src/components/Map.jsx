@@ -9,7 +9,7 @@ const Map = () => {
         center={[28.6139, 77.2090]} // Default: Delhi, India
         zoom={13} 
         scrollWheelZoom={true} 
-        style={{ height: "100vh", width: "100vw" }} // Full-screen map
+        style={{ height: "100vh", width: "100%" }} // Full-screen map
       >
         {/* OpenStreetMap Tile Layer */}
         <TileLayer
