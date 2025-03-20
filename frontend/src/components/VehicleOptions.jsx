@@ -1,7 +1,7 @@
 import React from "react";
 import VehicleOption from "./VehicleOption";
 
-const VehicleOptions = ({ selectedLocation }) => {
+const VehicleOptions = ({ selectedLocation, onVehicleSelect }) => {
   const vehicleData = [
     {
       vehicleType: "UberGO",
@@ -12,20 +12,20 @@ const VehicleOptions = ({ selectedLocation }) => {
       imageSrc: "uber-car.png",
     },
     {
-      vehicleType: "UberMoto",
+      vehicleType: "UberRickshaw",
       capacity: 6,
       time: "5 mins",
       price: 650,
       description: "Spacious, large rides",
-      imageSrc: "uber-bike.png",
+      imageSrc: "uber-auto.png",
     },
     {
-      vehicleType: "Uber Lux",
+      vehicleType: "UberTaxi",
       capacity: 4,
       time: "8 mins",
       price: 1200,
       description: "Premium, luxury rides",
-      imageSrc: "uber-car.png",
+      imageSrc: "uber-taxi.png",
     },
     {
       vehicleType: "UberBike",
@@ -39,18 +39,12 @@ const VehicleOptions = ({ selectedLocation }) => {
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-4">
-        Vehicle options for: {selectedLocation}
-      </h2>
+      <h2 className="text-xl font-bold mb-4">Choose a vehicle</h2>
       {vehicleData.map((vehicle, index) => (
         <VehicleOption
           key={index}
-          vehicleType={vehicle.vehicleType}
-          capacity={vehicle.capacity}
-          time={vehicle.time}
-          price={vehicle.price}
-          description={vehicle.description}
-          imageSrc={vehicle.imageSrc}
+          vehicle={vehicle}
+          onVehicleSelect={onVehicleSelect}
         />
       ))}
     </div>

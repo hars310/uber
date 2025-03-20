@@ -6,21 +6,36 @@ import "remixicon/fonts/remixicon.css";
 import LocationSearchPanel from "../components/LocationSearchPanel";
 import VehicleOptions from "../components/VehicleOptions";
 import SearchRide from "../components/SearchRide";
+import ConfirmRide from "../components/ConfirmRide";
 
 const Home = () => {
   const { user } = useContext(UserDataContext);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  const [pickupLocation, setPickupLocation] = useState("");
-  const [destinationLocation, setDestinationLocation] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState(null); // Track selected location
+
+  const savedState = JSON.parse(localStorage.getItem("rideState")) || {};
+  const [pickupLocation, setPickupLocation] = useState(savedState.pickupLocation || "");
+  const [destinationLocation, setDestinationLocation] = useState(savedState.destinationLocation || "");
+  const [selectedLocation, setSelectedLocation] = useState(savedState.selectedLocation || null);
+  const [selectedVehicle, setSelectedVehicle] = useState(savedState.selectedVehicle || null);
 
   useEffect(() => {
     if (!user || !token) {
       navigate("/login");
     }
   }, [user, token, navigate]);
+
+  // Save state to localStorage whenever any relevant state changes
+  useEffect(() => {
+    const stateToSave = {
+      pickupLocation,
+      destinationLocation,
+      selectedLocation,
+      selectedVehicle,
+    };
+    localStorage.setItem("rideState", JSON.stringify(stateToSave));
+  }, [pickupLocation, destinationLocation, selectedLocation, selectedVehicle]);
 
   const handlePickupChange = (e) => {
     setPickupLocation(e.target.value);
@@ -32,7 +47,7 @@ const Home = () => {
 
   const handleGoButtonClick = () => {
     if (pickupLocation && destinationLocation) {
-      setSelectedLocation(true);
+      setSelectedLocation({ pickupLocation, destinationLocation });
     } else {
       console.log("Please enter both pickup and destination locations");
     }
@@ -40,9 +55,16 @@ const Home = () => {
     setDestinationLocation("");
   };
 
-  // Handle click on a location
   const handleLocationClick = (location) => {
     setSelectedLocation(location);
+  };
+
+  const handleVehicleSelect = (vehicle) => {
+    setSelectedVehicle(vehicle);
+  };
+
+  const handleConfirmRide = () => {
+    navigate("/ride-confirmation");
   };
 
   return (
@@ -55,9 +77,7 @@ const Home = () => {
           alt="Uber Logo"
         />
 
-        {/* Find Trip Form */}
         <div className="pt-12 p-4 h-full">
-          {/* Only show SearchRide and LocationSearchPanel when no location is selected */}
           {!selectedLocation ? (
             <>
               <SearchRide
@@ -71,13 +91,39 @@ const Home = () => {
                 <LocationSearchPanel onLocationClick={handleLocationClick} />
               </div>
             </>
+          ) : !selectedVehicle ? (
+            // Show VehicleOptions if location is selected
+            <>
+              <h1
+                className="text-3xl mt-4 font-bold"
+                onClick={() => setSelectedLocation(null)} // Allow going back to location search
+              >
+                <i className="ri-arrow-left-s-line cursor-pointer"></i> Back
+              </h1>
+              <VehicleOptions
+                selectedLocation={selectedLocation}
+                onVehicleSelect={handleVehicleSelect}
+              />
+            </>
           ) : (
-            <VehicleOptions selectedLocation={selectedLocation} />
+            // Show ConfirmRide if vehicle is selected
+            <>
+             <h1
+                className="text-3xl mt-4 font-bold"
+                onClick={() => setSelectedVehicle(null)} // Allow going back to location search
+              >
+                <i className="ri-arrow-left-s-line cursor-pointer"></i> Back
+              </h1>
+              <ConfirmRide
+                selectedLocation={selectedLocation}
+                selectedVehicle={selectedVehicle}
+                onConfirmRide={handleConfirmRide}
+              />
+            </>
           )}
         </div>
       </div>
 
-      {/* Right Section with Map */}
       <div className="w-3/4 h-screen relative">
         <Map />
       </div>
