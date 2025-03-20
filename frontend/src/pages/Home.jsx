@@ -7,18 +7,18 @@ import LocationSearchPanel from "../components/LocationSearchPanel";
 import VehicleOptions from "../components/VehicleOptions";
 import SearchRide from "../components/SearchRide";
 import ConfirmRide from "../components/ConfirmRide";
+import LookingForDriver from "../components/LookingForDriver"; // Import the LookingForDriver component
 
 const Home = () => {
   const { user } = useContext(UserDataContext);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-
-  const savedState = JSON.parse(localStorage.getItem("rideState")) || {};
-  const [pickupLocation, setPickupLocation] = useState(savedState.pickupLocation || "");
-  const [destinationLocation, setDestinationLocation] = useState(savedState.destinationLocation || "");
-  const [selectedLocation, setSelectedLocation] = useState(savedState.selectedLocation || null);
-  const [selectedVehicle, setSelectedVehicle] = useState(savedState.selectedVehicle || null);
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [destinationLocation, setDestinationLocation] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [currentView, setCurrentView] = useState("location"); // "location", "vehicle", "confirm", "lookingForDriver"
 
   useEffect(() => {
     if (!user || !token) {
@@ -37,6 +37,17 @@ const Home = () => {
     localStorage.setItem("rideState", JSON.stringify(stateToSave));
   }, [pickupLocation, destinationLocation, selectedLocation, selectedVehicle]);
 
+  // Load saved state from localStorage on page load
+  useEffect(() => {
+    const savedState = JSON.parse(localStorage.getItem("rideState"));
+    if (savedState) {
+      setPickupLocation(savedState.pickupLocation);
+      setDestinationLocation(savedState.destinationLocation);
+      setSelectedLocation(savedState.selectedLocation);
+      setSelectedVehicle(savedState.selectedVehicle);
+    }
+  }, []);
+
   const handlePickupChange = (e) => {
     setPickupLocation(e.target.value);
   };
@@ -47,24 +58,28 @@ const Home = () => {
 
   const handleGoButtonClick = () => {
     if (pickupLocation && destinationLocation) {
-      setSelectedLocation({ pickupLocation, destinationLocation });
+      setSelectedLocation({
+        pickupLocation,
+        destinationLocation,
+      });
+      setCurrentView("vehicle"); // Switch to the vehicle selection view
     } else {
       console.log("Please enter both pickup and destination locations");
     }
-    setPickupLocation("");
-    setDestinationLocation("");
   };
 
   const handleLocationClick = (location) => {
     setSelectedLocation(location);
+    setCurrentView("vehicle"); // Switch to vehicle selection after location is selected
   };
 
   const handleVehicleSelect = (vehicle) => {
     setSelectedVehicle(vehicle);
+    setCurrentView("confirm"); // Switch to "confirm" view after vehicle selection
   };
 
   const handleConfirmRide = () => {
-    navigate("/ride-confirmation");
+    setCurrentView("lookingForDriver"); // Switch directly to "Looking for Driver"
   };
 
   return (
@@ -78,7 +93,8 @@ const Home = () => {
         />
 
         <div className="pt-12 p-4 h-full">
-          {!selectedLocation ? (
+          {/* Render different views based on currentView */}
+          {currentView === "location" && (
             <>
               <SearchRide
                 handlePickupChange={handlePickupChange}
@@ -91,12 +107,13 @@ const Home = () => {
                 <LocationSearchPanel onLocationClick={handleLocationClick} />
               </div>
             </>
-          ) : !selectedVehicle ? (
-            // Show VehicleOptions if location is selected
+          )}
+
+          {currentView === "vehicle" && (
             <>
               <h1
                 className="text-3xl mt-4 font-bold"
-                onClick={() => setSelectedLocation(null)} // Allow going back to location search
+                onClick={() => setCurrentView("location")} // Allow going back to location search
               >
                 <i className="ri-arrow-left-s-line cursor-pointer"></i> Back
               </h1>
@@ -105,12 +122,13 @@ const Home = () => {
                 onVehicleSelect={handleVehicleSelect}
               />
             </>
-          ) : (
-            // Show ConfirmRide if vehicle is selected
+          )}
+
+          {currentView === "confirm" && (
             <>
-             <h1
+              <h1
                 className="text-3xl mt-4 font-bold"
-                onClick={() => setSelectedVehicle(null)} // Allow going back to location search
+                onClick={() => setCurrentView("vehicle")} // Allow going back to vehicle selection
               >
                 <i className="ri-arrow-left-s-line cursor-pointer"></i> Back
               </h1>
@@ -121,9 +139,17 @@ const Home = () => {
               />
             </>
           )}
+
+          {currentView === "lookingForDriver" && (
+            <LookingForDriver
+              selectedLocation={selectedLocation}
+              selectedVehicle={selectedVehicle}
+            />
+          )}
         </div>
       </div>
 
+      {/* Right Section with Map */}
       <div className="w-3/4 h-screen relative">
         <Map />
       </div>
