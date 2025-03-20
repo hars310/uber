@@ -9,22 +9,29 @@ const YourAssignedDriver = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  const [pickupLocation, setPickupLocation] = useState("");
-  const [destinationLocation, setDestinationLocation] = useState("");
+  const [pickupLocation, setPickupLocation] = useState("Samaypur Badli");
+  const [destinationLocation, setDestinationLocation] = useState("Rajiv Chowk");
   const [driverInfo, setDriverInfo] = useState({
     name: "John Doe",
     vehicle: "Grand Vitara",
     vehicleNumber: "UP 37 0909",
     contact: "+1234567890",
     rating: 4.9,
-    profilePic: "driver-photo.jpg", // Assuming you have a driver's photo
+    profilePic: "driver-photo.jpg",
   });
+
+  const [isRideCompleted, setIsRideCompleted] = useState(true); // New state to track ride completion
 
   useEffect(() => {
     if (!user || !token) {
       navigate("/login");
     }
   }, [user, token, navigate]);
+
+  const handlePayment = () => {
+    alert("Proceeding to payment...");
+    // Add your payment integration here (like Stripe, PayPal, etc.)
+  };
 
   return (
     <div className="flex w-full h-screen bg-gray-100">
@@ -54,9 +61,6 @@ const YourAssignedDriver = () => {
             <div className="w-20 h-20 bg-zinc-300 rounded-full flex items-center justify-center absolute left-0 z-10">
               <img src="https://randomuser.me/api/portraits/men/45.jpg" className="w-20 rounded-full" alt="Uber Car" />
             </div>
-
-            {/* Card 2 */}
-            
           </div>
 
           <div>
@@ -88,13 +92,23 @@ const YourAssignedDriver = () => {
           </div>
         </div>
 
-        {/* Contact Driver Button */}
+        {/* Call Driver Button */}
         <button
           onClick={() => alert("Calling driver...")}
           className="w-full bg-green-600 text-white font-bold py-3 rounded-lg mt-4 hover:bg-green-700 transition duration-300"
         >
           Call Driver
         </button>
+
+        {/* Payment Button (only visible when ride is completed) */}
+        {isRideCompleted && (
+          <button
+            onClick={handlePayment}
+            className="w-full bg-zinc-900 text-white font-bold py-3 rounded-lg mt-4 hover:bg-zinc-700 transition duration-300"
+          >
+            Pay for Ride
+          </button>
+        )}
       </div>
 
       {/* Right Section with Map */}
