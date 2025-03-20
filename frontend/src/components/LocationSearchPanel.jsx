@@ -13,8 +13,8 @@ const LocationSearchPanel = () => {
   ];
 
   return (
-    <div className="h-full  rounded-md overflow-y-auto z-10 shadow-lg ">
-      <ul className=" bg-white w-full  mt-1 rounded-md max-h-60  z-10">
+    <div className="h-full  rounded-md overflow-y-auto z-10 shadow-lg">
+      <ul className=" bg-white w-full  mt-1  rounded-md max-h-60  z-10">
         {locations.map((location, index) => (
           <li
             key={index}

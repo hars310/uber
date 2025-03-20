@@ -4,14 +4,16 @@ import { useNavigate } from "react-router-dom";
 import Map from "../components/Map";
 import "remixicon/fonts/remixicon.css";
 import LocationSearchPanel from "../components/LocationSearchPanel";
+import VehicleOptions from "../components/VehicleOptions";
+import SearchRide from "../components/SearchRide";
 
 const Home = () => {
   const { user } = useContext(UserDataContext);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  const [pickupLocation, setPickupLocation] = useState('');
-  const [destinationLocation, setDestinationLocation] = useState('');
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [destinationLocation, setDestinationLocation] = useState("");
 
   useEffect(() => {
     if (!user || !token) {
@@ -29,12 +31,14 @@ const Home = () => {
 
   const handleGoButtonClick = () => {
     if (pickupLocation && destinationLocation) {
-      console.log(`Navigating from: ${pickupLocation} to: ${destinationLocation}`);
+      console.log(
+        `Navigating from: ${pickupLocation} to: ${destinationLocation}`
+      );
     } else {
-      console.log('Please enter both pickup and destination locations');
+      console.log("Please enter both pickup and destination locations");
     }
-    setPickupLocation("")
-    setDestinationLocation("")
+    setPickupLocation("");
+    setDestinationLocation("");
   };
 
   return (
@@ -48,36 +52,21 @@ const Home = () => {
         />
 
         {/* Find Trip Form */}
-        <div className="h-full pt-12 p-4 ">
-          <div className="h-1/3 mb-2 p-2 ">
-            <h2 className="text-zinc-900 text-2xl mb-1 font-bold">
-              Find a trip
-            </h2>
-            <form>
-              <input
-                type="text"
-                placeholder="Add your pickup location"
-                value={pickupLocation}
-                onChange={handlePickupChange}
-                className="w-full p-2 mb-2 rounded-md outline-none border-none bg-[#eeeeee]"
-              />
-              <div className="text-xl font-bold flex items-center justify-center">
-                <i className="ri-arrow-down-line"></i>
-              </div>
-              <input
-                type="text"
-                placeholder="Add your destination location"
-                value={destinationLocation}
-                onChange={handleDestinationChange}
-                className="w-full p-2 rounded-md outline-none border-none bg-[#eeeeee]"
-              />
-            </form>
-            <button onClick={handleGoButtonClick} className="w-full p-2 rounded-md bg-green-600 mt-3 text-white font-bold text-xl cursor-pointer ">
-              Go
-            </button>
+        <div className="pt-12 p-4 ">
+          <div className="h-full hidden">
+          <SearchRide
+            handlePickupChange={handlePickupChange}
+            handleDestinationChange={handleDestinationChange}
+            pickupLocation={pickupLocation}
+            destinationLocation={destinationLocation}
+            handleGoButtonClick={handleGoButtonClick}
+          />
+            <div className="h-2/3 bg-white">
+              <LocationSearchPanel />
+            </div>
           </div>
-          <div className="h-2/3 bg-white">
-            <LocationSearchPanel />
+          <div className="mt-4">
+           <VehicleOptions/>
           </div>
         </div>
       </div>
