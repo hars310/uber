@@ -1,5 +1,6 @@
 import React from 'react'
 import Map from "../components/Map";
+import { Link } from 'react-router-dom';
 
 const StartPageHero = () => {
   return (
@@ -55,9 +56,9 @@ const StartPageHero = () => {
             <button className="bg-black text-white px-6 py-3 rounded-lg">
               See prices
             </button>
-            <a href="#" className="text-md font-bold self-center underline">
+            <Link to={"/login"} className="text-md font-bold self-center underline">
               Log in to see your recent activity
-            </a>
+            </Link>
           </div>
         </div>
 

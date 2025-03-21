@@ -14,10 +14,10 @@ const StartPageLogin = () => {
           <p className="text-md font-semibold mr-12 mb-4 ">
             View past trips, tailored suggestions, support resources, and more.
           </p>
-          <button className="w-2/3 mt-4 bg-zinc-900 text-white text-xl rounded-lg p-3">
+          <Link to={"/login"} className="w-1/2 mt-4 text-center bg-zinc-900 text-white text-xl rounded-lg p-3">
             Log in to your Account
-          </button>
-          <Link className="mt-6 text-lg" href="/register">
+          </Link>
+          <Link className="mt-6 text-lg" to="/register">
             Don’t have an Uber account? Sign up
           </Link>
         </div>

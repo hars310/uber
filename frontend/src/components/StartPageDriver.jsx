@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const StartPageDriver = () => {
   return (
@@ -25,13 +26,13 @@ const StartPageDriver = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-8">
-            <button className="bg-black text-white font-medium py-3 px-6 rounded-md hover:bg-gray-800 transition duration-300 w-full sm:w-auto">
+            <Link to={"/captain-register"} className="bg-black text-white font-medium py-3 px-6 rounded-md hover:bg-gray-800 transition duration-300 w-full sm:w-auto">
               Get started
-            </button>
+            </Link>
 
-            <div className="text-gray-800 text-lg underline cursor-pointer">
+            <Link to={"/captain-login"} className="text-gray-800 text-lg underline cursor-pointer">
               Already have an account? Sign in
-            </div>
+            </Link>
           </div>
         </div>
       </div>
