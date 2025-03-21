@@ -1,9 +1,30 @@
-import React from 'react'
+import React from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 const Map = () => {
   return (
-    <div>Map</div>
-  )
-}
+    <div className="map-container rounded-lg overflow-hidden">
+      <MapContainer 
+        center={[28.6139, 77.2090]} // Default: Delhi, India
+        zoom={10} 
+        scrollWheelZoom={true} 
+        style={{ height: "70vh", width: "40vw" }} // Full-screen map
+        
+      >
+        {/* OpenStreetMap Tile Layer */}
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        
+        {/* Marker Example */}
+        <Marker position={[28.6139, 77.2090]}>
+          <Popup>New Delhi, India</Popup>
+        </Marker>
+      </MapContainer>
+    </div>
+  );
+};
 
-export default Map
+export default Map;
