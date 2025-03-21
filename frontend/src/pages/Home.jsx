@@ -1,9 +1,33 @@
-import React from 'react'
+import { useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { TripDataContext } from "../context/TripContext";
+import StartPageHeader from "../components/StartPageHeader";
+import HomeBody from "../components/HomeBody";
 
 const Home = () => {
-  return (
-    <div>Home</div>
-  )
-}
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  const { setTripDetails } = useContext(TripDataContext);
 
-export default Home
+  useEffect(() => {
+    if (!token) {
+      navigate("/login");
+    } else {
+      // Retrieve trip details from LocalStorage after login
+      const storedTrip = JSON.parse(localStorage.getItem("tripDetails"));
+      if (storedTrip) {
+        setTripDetails(storedTrip);
+        // localStorage.removeItem("tripDetails"); // Clean up after restoring
+      }
+    }
+  }, [token, navigate, setTripDetails]);
+
+  return (
+    <div className="h-screen w-full">
+      <StartPageHeader />
+      <HomeBody />
+    </div>
+  );
+};
+
+export default Home;

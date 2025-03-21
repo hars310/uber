@@ -8,10 +8,11 @@ import CaptainRegister from './pages/CaptainRegister'
 import Captainlogin from './pages/CaptainLogin'
 import UserProtectWrapper from './pages/UserProtectWrapper'
 import UserLogout from './pages/UserLogout'
-// import Home from './pages/Home'
+import Home from './pages/Home'
 // import CaptainHome from './pages/CaptainHome'
 import CaptainProtectWrapper from './pages/CaptainProtectWrapper'
 import CaptainLogout from './pages/CaptainLogout'
+import {  TripProvider } from './context/TripContext'
 // import YourAssignedDriver from './pages/YourAssignedDriver'
 const App = () => {
 
@@ -19,12 +20,13 @@ const App = () => {
     <div>
     <Toaster />
       <Routes>
-        <Route path='/' element={<StartPage />} />
+        
+        <Route path='/' element={<TripProvider><StartPage /></TripProvider>} />
+        <Route path='/home' element={<TripProvider><Home/></TripProvider>}/>
         <Route path='/register' element={<UserRegister />} />
         <Route path='/login' element={<UserLogin />} />
         <Route path='/captain-register' element={<CaptainRegister />} />
         <Route path='/captain-login' element={<Captainlogin />} />
-        {/* <Route path='/home' element={<Home/>}/> */}
         {/* <Route path='/captain-home' element={<CaptainHome/>}/> */}
         {/* <Route path='/assigned-driver' element={<YourAssignedDriver/>} /> */}
         <Route path='/user/logout'

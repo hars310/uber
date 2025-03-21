@@ -5,8 +5,10 @@ import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import UserContext from "./context/UserContext";
 import CaptainContext from "./context/CapatainContext.jsx";
+import {  TripProvider } from "./context/TripContext.jsx";
 
 createRoot(document.getElementById("root")).render(
+  <TripProvider>
   <CaptainContext>
   <UserContext>
     <BrowserRouter>
@@ -16,4 +18,5 @@ createRoot(document.getElementById("root")).render(
     </BrowserRouter>
   </UserContext>
   </CaptainContext>
+  </TripProvider>
 );
