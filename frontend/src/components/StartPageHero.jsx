@@ -23,6 +23,8 @@ const StartPageHero = () => {
     setUserLoggedIn(!!token);
   }, []);
 
+  const mapStyles = {height: "70vh", width: "40vw",borderRadius:"20px"}
+
   // Create the debounced function using useCallback to avoid recreation on each render
   const debouncedFetchSuggestions = useCallback(
     debounce(async (query, type) => {
@@ -116,7 +118,9 @@ const StartPageHero = () => {
       const response = await axios.get(url);
       
       if (response.data.routes && response.data.routes.length > 0) {
-        setRoute(response.data.routes[0].geometry.coordinates);
+        const routeCoordinates = response.data.routes[0].geometry.coordinates
+        setRoute(route);
+        // setTripDetails(prev => ({ ...prev, route: routeCoordinates }));
       } else {
         console.error("No routes found");
         setRoute(null);
@@ -130,10 +134,10 @@ const StartPageHero = () => {
   
 
   const handleSeePrices = () => {
-    if (!markers[0] || !markers[1]) {
-      alert("Please select both pickup and destination locations");
-      return;
-    }
+    // if (!markers[0] || !markers[1]) {
+    //   alert("Please select both pickup and destination locations");
+    //   return;
+    // }
   
     const tripData = {
       pickup, 
@@ -220,20 +224,16 @@ const StartPageHero = () => {
           </div>
         </div>
         <button 
-          className={`px-6 py-3 rounded-lg mt-4 ${
-            markers[0] && markers[1] 
-              ? "bg-black text-white" 
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
-          }`} 
+          className={`px-6 py-3 rounded-lg mt-4 bg-black text-white`} 
           onClick={handleSeePrices}
-          disabled={!markers[0] || !markers[1]}
+          // disabled={!markers[0] || !markers[1]}
         >
           See prices
         </button>
       </div>
-      <div className="w-1/2 p-14 mr-12 lg:w-1/2 mt-10 lg:mt-0">
+      <div className="w-1/2 p-14 mr-12 lg:w-1/2 mt-10 lg:mt-0 overflow-hidden">
         {/* <Map center={mapCenter} markers={markers.filter(m => m !== null)} route={route} /> */}
-        <Map center={mapCenter} markers={markers.filter(m => m !== null)} route={route} />
+        <Map  mapStyles={mapStyles} center={mapCenter} markers={markers.filter(m => m !== null)} route={route} />
       </div>
     </main>
   );

@@ -25,7 +25,7 @@ const ChangeMapView = ({ center }) => {
   return null;
 };
 
-const Map = ({ center, markers, route }) => {
+const Map = ({ center, markers, route ,mapStyles}) => {
   // Validate center coordinates
   const defaultCenter = [28.6139, 77.2090]; // Default: New Delhi
   const validCenter = (center && Array.isArray(center) && center.length === 2 && 
@@ -46,12 +46,12 @@ const Map = ({ center, markers, route }) => {
     [];
 
   return (
-    <div className="map-container rounded-lg overflow-hidden">
+    <div className="map-container">
       <MapContainer 
         center={validCenter} 
         zoom={10} 
         scrollWheelZoom={true} 
-        style={{ height: "70vh", width: "40vw" }}
+        style={mapStyles}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
