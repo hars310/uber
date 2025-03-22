@@ -146,7 +146,7 @@ function HomeBody() {
   };
 
   return (
-    <div className={`flex flex-col py-8  px-8 md:flex-row space-y-4 md:space-y-0 md:space-x-4 ${!rideOptionsVisible ? "h-screen" : ""}`}>
+    <div className={`flex flex-col py-8  px-8 md:flex-row space-y-4 md:space-y-0 md:space-x-4 ${!rideOptionsVisible ? "h-[90vh]" : "h-screen"}`}>
       
       {/* Left Section: Enter Trip Details */}
       <div className={rideOptionsVisible ? "w-1/4" : "w-1/3"}>

@@ -27,6 +27,13 @@ const UserLogin = () => {
         setUser(data.user);
         localStorage.setItem('token', data.token);
         toast.success('Login successful');
+        localStorage.setItem('user',JSON.stringify({
+          fullName: {
+            firstName: data.user.fullname.firstname,
+            lastName: data.user.fullname.lastname,
+          },
+          email: data.user.email,
+        }))
         setTimeout(() => navigate('/home'), 300);
         
         

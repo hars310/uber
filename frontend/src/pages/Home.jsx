@@ -23,7 +23,7 @@ const Home = () => {
   }, [token, navigate, setTripDetails]);
 
   return (
-    <div className="h-screen w-full">
+    <div className="w-full">
       <StartPageHeader />
       <HomeBody />
     </div>
