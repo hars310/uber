@@ -9,7 +9,7 @@ import Captainlogin from './pages/CaptainLogin'
 import UserProtectWrapper from './pages/UserProtectWrapper'
 import UserLogout from './pages/UserLogout'
 import Home from './pages/Home'
-// import CaptainHome from './pages/CaptainHome'
+import CaptainHome from './pages/CaptainHome'
 import CaptainProtectWrapper from './pages/CaptainProtectWrapper'
 import CaptainLogout from './pages/CaptainLogout'
 import {  TripProvider } from './context/TripContext'
@@ -27,7 +27,7 @@ const App = () => {
         <Route path='/login' element={<UserLogin />} />
         <Route path='/captain-register' element={<CaptainRegister />} />
         <Route path='/captain-login' element={<Captainlogin />} />
-        {/* <Route path='/captain-home' element={<CaptainHome/>}/> */}
+        <Route path='/captain-home' element={<CaptainHome/>}/>
         {/* <Route path='/assigned-driver' element={<YourAssignedDriver/>} /> */}
         <Route path='/user/logout'
           element={<UserProtectWrapper>

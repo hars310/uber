@@ -51,6 +51,7 @@ const StartPageHeader = () => {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem('tripDetails')
     setUser(null);
     navigate("/login");
   };

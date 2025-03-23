@@ -43,12 +43,6 @@ const StartPageHero = () => {
       try {
         const response = await axios.get(
           `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`,
-          // {
-          //   // headers: {
-          //   //   'Accept-Language': 'en-US,en;q=0.9',
-          //   //   'User-Agent': 'RideShareApp/1.0'
-          //   // }
-          // }
         );
         setSuggestions(prev => ({ ...prev, [type]: response.data }));
       } catch (error) {
