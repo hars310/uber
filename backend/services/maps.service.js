@@ -21,26 +21,38 @@ module.exports.getAddressCoordinate = async (address) => {
     }
 }
 
-module.exports.getDistanceTime = async (origin, destination) => {
-    if (!origin || !destination) {
-        throw new Error('Origin and destination are required');
+module.exports.getDistanceTime = async (pickup, destination,pickupCoordinates,destinationCoordinates) => {
+    if (!pickup || !destination) {
+        throw new Error('pickup and destination are required');
     }
 
-    // Convert origin & destination strings to coordinates
-    const originCoords = await module.exports.getAddressCoordinate(origin);
-    const destinationCoords = await module.exports.getAddressCoordinate(destination);
+    console.log("here 1")
+    // Convert pickup & destination strings to coordinates
+    // const pickupCoords = await module.exports.getAddressCoordinate(pickup);
+    // const destinationCoords = await module.exports.getAddressCoordinate(destination);
 
-    if (!originCoords || !destinationCoords) {
-        throw new Error('Failed to fetch coordinates for origin or destination');
+    // const pickupCoords = pickupCoordinates;
+    // const destinationCoords = destinationCoordinates;
+    // console.log(pickupCoords,destinationCoords,"service")
+    if (!pickupCoordinates || !destinationCoordinates) {
+        throw new Error('Failed to fetch coordinates for pickup or destination');
     }
+    console.log("here 2")
 
-    console.log("Origin:", originCoords);
-    console.log("Destination:", destinationCoords);
+    console.log("pickup:", pickupCoordinates);
+    console.log("Destination:", destinationCoordinates);
 
-    const url = `https://router.project-osrm.org/route/v1/driving/${originCoords.lng},${originCoords.ltd};${destinationCoords.lng},${destinationCoords.ltd}?overview=false`;
+    const url = `https://router.project-osrm.org/route/v1/driving/${pickupCoordinates[1]},${pickupCoordinates[0]};${destinationCoordinates[1]},${destinationCoordinates[0]}?overview=false`;
 
     try {
-        const response = await axios.get(url);
+        const response = await axios.get(url, {
+            headers: { "Content-Type": "application/json" },
+            // timeout: 5000, // Set a timeout to avoid hanging requests
+            // validateStatus: function (status) {
+            //     return status >= 200 && status < 300; // Accept only successful responses
+            // }
+        });
+        // console.log("response",response)
         if (response.data.routes.length > 0) {
             return {
                 distance: response.data.routes[0].distance, // in meters

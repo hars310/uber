@@ -50,11 +50,11 @@ module.exports.getFare = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { pickup, destination } = req.query;
+    const { pickup, destination, pickupCoordinates, destinationCoordinates } = req.query;
     
-
+    // console.log(pickupCoordinates,destinationCoordinates,"getFarecontroller")
     try {
-        const fare = await rideService.getFare(pickup, destination);
+        const fare = await rideService.getFare(pickup, destination, pickupCoordinates, destinationCoordinates);
         return res.status(200).json(fare);
     } catch (err) {
         return res.status(500).json({ message: err.message });
@@ -130,5 +130,5 @@ module.exports.endRide = async (req, res) => {
         
     } catch (err) {
         return res.status(500).json({ message: err.message });
-    } s
+    }
 }

@@ -3,13 +3,13 @@ const mapService = require('./maps.service');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
-async function getFare(pickup, destination) {
+async function getFare(pickup, destination, pickupCoordinates, destinationCoordinates) {
     if (!pickup || !destination) {
         throw new Error("Pickup and destination are required");
     }
 
-    const distanceTime = await mapService.getDistanceTime(pickup, destination);
-    
+    const distanceTime = await mapService.getDistanceTime(pickup, destination,pickupCoordinates,destinationCoordinates);
+        console.log(distanceTime)
     // Validate the response
     if (!distanceTime || !distanceTime.distance || !distanceTime.duration) {
         throw new Error("Failed to fetch distance and time for fare calculation");

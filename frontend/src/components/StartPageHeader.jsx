@@ -52,6 +52,8 @@ const StartPageHeader = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     localStorage.removeItem('tripDetails')
+    localStorage.removeItem('fareData')
+    localStorage.removeItem('vehicleoptions')
     setUser(null);
     navigate("/login");
   };
