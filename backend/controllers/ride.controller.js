@@ -11,37 +11,45 @@ module.exports.createRide = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { userId, pickup, destination, vehicleType } = req.body;
+    const { pickup, destination, pickupCoords, destinationCoords, vehicleType, fare } = req.body;
+    // console.log(pickup, destination, pickupCoords, destinationCoords, vehicleType, fare )
 
     try {
-        const ride = await rideService.createRide({ user: req.user._id, pickup, destination, vehicleType });
-        res.status(201).json(ride);
+        // Create a new ride in the database
+        const ride = await rideService.createRide({
+            user: req.user._id,
+            pickup,
+            destination,
+            pickupCoords,
+            destinationCoords,
+            vehicleType,
+            fare,
+            status: "pending", // Default status
+        });
 
-        const pickupCoordinates = await mapService.getAddressCoordinate(pickup);
+        // Get captains in a 2 km radius from the pickup location
+        const captainsInRadius = await mapService.getCaptainsInTheRadius(pickupCoords[0], pickupCoords[1], 2);
 
+        // Hide OTP in response
+        ride.otp = "";
 
+        // Populate user details in ride response
+        const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate("user");
 
-        const captainsInRadius = await mapService.getCaptainsInTheRadius(pickupCoordinates.ltd, pickupCoordinates.lng, 2);
-
-        ride.otp = ""
-
-        const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate('user');
-
-        captainsInRadius.map(captain => {
-
+        // Notify available captains via WebSocket
+        captainsInRadius.forEach((captain) => {
             sendMessageToSocketId(captain.socketId, {
-                event: 'new-ride',
-                data: rideWithUser
-            })
+                event: "new-ride",
+                data: rideWithUser,
+            });
+        });
 
-        })
+        res.status(201).json({ rideId: ride._id, message: "Ride created successfully!" });
 
     } catch (err) {
-
-        console.log(err);
-        return res.status(500).json({ message: err.message });
+        console.error("Ride creation error:", err);
+        return res.status(500).json({ message: "Internal Server Error" });
     }
-
 };
 
 module.exports.getFare = async (req, res) => {
@@ -132,3 +140,13 @@ module.exports.endRide = async (req, res) => {
         return res.status(500).json({ message: err.message });
     }
 }
+
+module.exports.pendingRides = async (req, res) => {
+    try {
+        const rides = await rideModel.find({ status: "pending" })
+        return res.status(200).json(rides);
+    } catch (err) {
+        console.error("Error fetching pending rides:", err);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+};

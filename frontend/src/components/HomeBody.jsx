@@ -27,6 +27,7 @@ function HomeBody() {
   });
   const [fareData, setFareData] = useState([]);
   const [fareLoading, setFareLoading] = useState(false);
+  const [creatingRide, setCreatingRide] = useState(false);
 
   const isTripSelected = markers[0] && markers[1];
   const token = localStorage.getItem("token");
@@ -35,11 +36,7 @@ function HomeBody() {
     ? "w-1/3 transition-all duration-300"
     : "w-1/4 transition-all duration-300";
 
-  // useEffect(() => {
-  //   if (!rideOptionsVisible) {
-  //     setRideOptionsVisible(val);
-  //   }
-  // }, []);
+
 
   /** Load Trip Details from Local Storage on Mount */
   useEffect(() => {
@@ -188,6 +185,66 @@ function HomeBody() {
     }
   };
 
+  // const handleCreateRide = async (vehicleType, price) => {
+  //   setCreatingRide(true);
+  //   try {
+  //     const { data } = await axios.post(
+  //       `${import.meta.env.VITE_BASE_URL}/rides/create`,
+  //       {
+  //         pickup,
+  //         destination,
+  //         pickupCoords: markers[0],
+  //         destinationCoords: markers[1],
+  //         vehicleType,
+  //         fare: price,
+  //       },
+  //       { headers: { Authorization: `Bearer ${token}` } }
+  //     );
+
+  //     if (!data || data.error) {
+  //       toast.error("Failed to create ride. Try again.");
+  //       return;
+  //     }
+
+  //     toast.success(`Ride booked successfully! Ride ID: ${data.rideId}`);
+  //     localStorage.setItem("rideDetails", JSON.stringify(data));
+  //   } catch (error) {
+  //     toast.error("Error creating ride.");
+  //   } finally {
+  //     setCreatingRide(false);
+  //   }
+  // };
+  const handleCreateRide = async (vehicleType, price) => {
+    setCreatingRide(true);
+    try {
+        const { data } = await axios.post(
+            `${import.meta.env.VITE_BASE_URL}/rides/create`,
+            {
+                pickup,
+                destination,
+                pickupCoords: markers[0],  // Array format [latitude, longitude]
+                destinationCoords: markers[1],
+                vehicleType,
+                fare: price,
+            },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (!data || data.error) {
+            toast.error("Failed to create ride. Try again.");
+            return;
+        }
+
+        toast.success(`Ride booked successfully! Ride ID: ${data.rideId}`);
+        localStorage.setItem("rideDetails", JSON.stringify(data));
+
+    } catch (error) {
+        toast.error("Error creating ride.");
+    } finally {
+        setCreatingRide(false);
+    }
+};
+
   return (
     <div className="flex flex-col py-8 px-8 md:flex-row space-y-4 md:space-y-0 md:space-x-4 h-[90vh]">
       {/* Left Section: Enter Trip Details */}
@@ -273,21 +330,20 @@ function HomeBody() {
           </div>
         ) : fareData && Object.keys(fareData).length > 0 ? (
           Object.entries(fareData).map(([type, price]) => (
-            <div
+            <button
               key={type}
-              className="border text-black p-4 rounded-lg flex items-center justify-between shadow-md"
+              onClick={() => handleCreateRide(type, price)}
+              className="border cursor-pointer text-black p-4 rounded-lg flex items-center justify-between shadow-md hover:bg-gray-300 transition-all"
+              disabled={creatingRide}
             >
-              <img
-                src={`uber-${type}.png`}
-                alt={type}
-                className="w-16 h-16 object-contain"
-              />
+              <img src={`uber-${type}.png`} alt={type} className="w-16 h-16 object-contain" />
               <div>
                 <h3 className="text-lg font-bold">{type.toUpperCase()}</h3>
                 <p className="text-sm text-gray-500">A {type} for your ride</p>
                 <p className="text-md font-semibold">₹{price}</p>
+                {creatingRide && <p className="text-blue-500 text-sm">Booking...</p>}
               </div>
-            </div>
+            </button>
           ))
         ) : (
           <></>
