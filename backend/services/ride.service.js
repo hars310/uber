@@ -80,38 +80,39 @@ module.exports.createRide = async ({
         destinationCoords,
         otp: getOtp(6),
         fare,
-        status
+        status,
+        vehicleType
     })
 
     return ride;
 }
 
-module.exports.confirmRide = async ({
-    rideId, captain
-}) => {
+module.exports.confirmRide = async ({ rideId, captain }) => {
     if (!rideId) {
-        throw new Error('Ride id is required');
+        throw new Error('Ride ID is required');
     }
-    console.log(rideId,captain)
 
-    await rideModel.findOneAndUpdate({
-        _id: rideId
-    }, {
-        status: 'accepted',
-        captain: captain._id
-    })
+    console.log("Confirming ride:", rideId, captain);
 
-    const ride = await rideModel.findOne({
-        _id: rideId
-    }).populate('user').populate('captain').select('+otp');
+    // Update ride status and assign captain
+    await rideModel.findOneAndUpdate(
+        { _id: rideId },
+        { status: 'accepted', captain: captain._id }
+    );
+
+    // Fetch ride details with user information
+    const ride = await rideModel.findOne({ _id: rideId })
+        .populate('user', 'fullname email') 
+        .populate('captain', 'fullname') 
+        .select('+otp');
 
     if (!ride) {
         throw new Error('Ride not found');
     }
 
     return ride;
+};
 
-}
 
 module.exports.startRide = async ({ rideId, otp, captain }) => {
     if (!rideId || !otp) {

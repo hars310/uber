@@ -76,23 +76,37 @@ module.exports.confirmRide = async (req, res) => {
     }
 
     const { rideId } = req.body;
-    // console.log(rideId)
-    // console.log(req.captain)
+
     try {
         const ride = await rideService.confirmRide({ rideId, captain: req.captain });
+
+        if (!ride) {
+            return res.status(404).json({ message: "Ride not found" });
+        }
 
         sendMessageToSocketId(ride.user.socketId, {
             event: 'ride-confirmed',
             data: ride
-        })
+        });
 
-        return res.status(200).json(ride);
+        
+        return res.status(200).json({
+            rideId: ride._id,
+            pickup: ride.pickup,
+            destination: ride.destination,
+            fare: ride.fare,
+            vehicleType: ride.vehicleType,
+            status: ride.status,
+            user: ride.user, 
+            captain: ride.captain
+        });
+
     } catch (err) {
-
-        console.log(err);
+        console.error("Error confirming ride:", err);
         return res.status(500).json({ message: err.message });
     }
-}
+};
+
 
 module.exports.startRide = async (req, res) => {
     const errors = validationResult(req);
@@ -143,7 +157,10 @@ module.exports.endRide = async (req, res) => {
 
 module.exports.pendingRides = async (req, res) => {
     try {
-        const rides = await rideModel.find({ status: "pending" })
+        const vehicleType = req.captain.vehicle.vehicleType;
+        
+        // console.log(vehicleType)
+        const rides = await rideModel.find({ status: "pending" ,vehicleType: vehicleType })
         return res.status(200).json(rides);
     } catch (err) {
         console.error("Error fetching pending rides:", err);

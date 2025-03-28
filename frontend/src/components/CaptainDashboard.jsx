@@ -43,6 +43,7 @@ const CaptainDashboard = () => {
       const response = await axios.get("http://localhost:4000/rides/pending", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      // console.log(response.data)
       setRides(response.data);
     } catch (error) {
       console.error("Error fetching rides", error);
@@ -83,7 +84,7 @@ const CaptainDashboard = () => {
       // console.log(response)
       // Get coordinates for pickup & destination
       setRideStatus(response.data.status)
-      console.log(response.data.status)
+      // console.log(response.data)
       const pickupCoords = await getCoordinates(pickup);
       const destinationCoords = await getCoordinates(destination);
 
@@ -93,7 +94,7 @@ const CaptainDashboard = () => {
       }
 
       // Store ride details & fetch route
-      setSelectedRide({ rideId, pickup, destination, pickupCoords, destinationCoords,fare ,rideStatus});
+      setSelectedRide({ rideId, pickup, destination,user:response.data.user.fullname.firstname , pickupCoords, destinationCoords,fare ,rideStatus});
       setRides([]); // Clear all other rides
       fetchRoute(pickupCoords, destinationCoords);
       toast.success("Ride confirmed!");
@@ -167,7 +168,7 @@ const CaptainDashboard = () => {
       setLoading(false);
     }
   };
-  console.log(rideStatus)
+  // console.log(selectedRide?.user)
 
   return (
     <div className="p-4">
@@ -176,21 +177,21 @@ const CaptainDashboard = () => {
 
       {/* Show only the confirmed ride */}
       {selectedRide ? (
-        <div className="border p-4 mb-2 shadow-md rounded-md">
-          <h2 className="text-xl font-bold">Confirmed Ride</h2>
+        <div className="w-full  flex flex-row p-4 mb-2">
+         <div className="border shadow-md p-4 w-1/3 h-fit rounded-md ">
+         <h2 className="text-xl font-bold">Confirmed Ride</h2>
+          <p><strong>Customer:</strong> {selectedRide.user}</p>
           <p><strong>Pickup:</strong> {selectedRide.pickup}</p>
           <p><strong>Destination:</strong> {selectedRide.destination}</p>
           <p><strong>Fare:</strong> ₹{selectedRide.fare}</p>
-
           {rideStatus === "accepted" && (
             <button
               onClick={() => startRide(selectedRide.rideId)}
-              className="bg-yellow-500 text-white px-4 py-2 mt-2 rounded"
+              className="bg-green-600 text-white font-bold px-4 py-2 mt-2 rounded"
             >
               Start Ride
             </button>
           )}
-
           {rideStatus === "ongoing" && (
             <button
               onClick={() => endRide(selectedRide.rideId)}
@@ -199,39 +200,44 @@ const CaptainDashboard = () => {
               End Ride
             </button>
           )}
+         </div>
 
           {/* Show Map with Route */}
+          
           {route && (
-            <div className="mt-6">
-              <h2 className="text-xl font-bold">Route Map</h2>
+            <div className=" px-10">
+              {/* <h2 className="text-xl font-bold">Route Map</h2> */}
               <Map
                 center={selectedRide.pickupCoords}
-                markers={[selectedRide.pickupCoords, selectedRide.destinationCoords]}
                 route={route}
-                mapStyles={{ height: "400px", width: "100%" }}
+                markers={[selectedRide.pickupCoords, selectedRide.destinationCoords]}
+                mapStyles={{ height: "85vh", width: "65vw" }}
               />
             </div>
           )}
+          
         </div>
       ) : (
         // List available rides if no ride is confirmed
-        <div className="mt-4">
+        <div className="mt-4 flex flex-col px-6 py-12 gap-2">
+          <p className="text-xl font-bold">Available requests for you</p>
           {rides.length === 0 ? (
             <p>No available rides</p>
           ) : (
             rides.map((ride) => (
-              <div key={ride._id} className="border p-4 mb-2 shadow-md rounded-md">
+              <div key={ride._id} className="border p-4 mb-2 shadow-md w-1/3 rounded-md">
                 <p><strong>Pickup:</strong> {ride.pickup}</p>
                 <p><strong>Destination:</strong> {ride.destination}</p>
                 <p><strong>Fare:</strong> ₹{ride.fare}</p>
                 <button
                   onClick={() => confirmRide(ride._id, ride.pickup, ride.destination,ride.fare)}
-                  className="bg-blue-500 text-white px-4 py-2 mt-2 rounded"
+                  className="bg-zinc-900 text-white px-4 py-2 mt-2 rounded"
                 >
                   Confirm Ride
                 </button>
               </div>
             ))
+            
           )}
         </div>
       )}
