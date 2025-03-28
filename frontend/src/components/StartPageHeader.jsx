@@ -54,6 +54,7 @@ const StartPageHeader = () => {
     localStorage.removeItem('tripDetails')
     localStorage.removeItem('fareData')
     localStorage.removeItem('vehicleoptions')
+    localStorage.removeItem('rideDetails')
     setUser(null);
     navigate("/login");
   };
