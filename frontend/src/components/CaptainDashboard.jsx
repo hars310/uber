@@ -33,7 +33,7 @@ const CaptainDashboard = () => {
     });
 
     return () => socket.disconnect();
-  }, [selectedRide]);
+  }, []);
 
   // Fetch pending rides from the server
   const fetchRides = async () => {
@@ -231,7 +231,7 @@ const CaptainDashboard = () => {
                 <p><strong>Fare:</strong> ₹{ride.fare}</p>
                 <button
                   onClick={() => confirmRide(ride._id, ride.pickup, ride.destination,ride.fare)}
-                  className="bg-zinc-900 text-white px-4 py-2 mt-2 rounded"
+                  className="bg-zinc-900 text-white px-4 py-2 mt-2 rounded cursor-pointer"
                 >
                   Confirm Ride
                 </button>

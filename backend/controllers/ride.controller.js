@@ -12,10 +12,8 @@ module.exports.createRide = async (req, res) => {
     }
 
     const { pickup, destination, pickupCoords, destinationCoords, vehicleType, fare } = req.body;
-    // console.log(pickup, destination, pickupCoords, destinationCoords, vehicleType, fare )
 
     try {
-        // Create a new ride in the database
         const ride = await rideService.createRide({
             user: req.user._id,
             pickup,
@@ -24,19 +22,15 @@ module.exports.createRide = async (req, res) => {
             destinationCoords,
             vehicleType,
             fare,
-            status: "pending", // Default status
+            status: "pending",
         });
 
-        // Get captains in a 2 km radius from the pickup location
         const captainsInRadius = await mapService.getCaptainsInTheRadius(pickupCoords[0], pickupCoords[1], 2);
-
-        // Hide OTP in response
+        
         ride.otp = "";
 
-        // Populate user details in ride response
-        const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate("user");
+        const rideWithUser = await rideModel.findById(ride._id).populate("user");
 
-        // Notify available captains via WebSocket
         captainsInRadius.forEach((captain) => {
             sendMessageToSocketId(captain.socketId, {
                 event: "new-ride",
@@ -51,7 +45,7 @@ module.exports.createRide = async (req, res) => {
         return res.status(500).json({ message: "Internal Server Error" });
     }
 };
-
+    
 module.exports.getFare = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -78,31 +72,24 @@ module.exports.confirmRide = async (req, res) => {
     const { rideId } = req.body;
 
     try {
-        const ride = await rideService.confirmRide({ rideId, captain: req.captain });
+        const ride = await rideModel.findByIdAndUpdate(
+            rideId,
+            { status: "accepted", captain: req.captain._id },
+            { new: true }
+        ).populate("user").populate("captain");
 
         if (!ride) {
             return res.status(404).json({ message: "Ride not found" });
         }
-
+        console.log(ride)
         sendMessageToSocketId(ride.user.socketId, {
-            event: 'ride-confirmed',
-            data: ride
+            event: "ride-confirmed",
+            data: ride,
         });
 
-        
-        return res.status(200).json({
-            rideId: ride._id,
-            pickup: ride.pickup,
-            destination: ride.destination,
-            fare: ride.fare,
-            vehicleType: ride.vehicleType,
-            status: ride.status,
-            user: ride.user, 
-            captain: ride.captain
-        });
-
+        res.status(200).json(ride);
     } catch (err) {
-        console.error("Error confirming ride:", err);
+        console.error(err);
         return res.status(500).json({ message: err.message });
     }
 };

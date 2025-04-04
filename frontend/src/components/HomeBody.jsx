@@ -37,7 +37,7 @@ function HomeBody() {
   const [captainDetails, setCaptainDetails] = useState(null);
   const [rideId, setRideId] = useState(null);
 
-  const isTripSelected = markers[0] && markers[1];
+  // const isTripSelected = markers[0] && markers[1];
   const token = localStorage.getItem("token");
   const val = localStorage.getItem("vehicleoptions");
   const mapContainerClass = tripDetails
@@ -63,16 +63,16 @@ function HomeBody() {
 
   useEffect(() => {
     if (rideId) {
-      socket.on(`ride-confirmed`, (rideData) => {
-        setCaptainDetails(rideData.captain);
-        setIsSearching(false); // Stop searching animation
-        toast.success("Captain assigned! 🚖");
+      socket.on("ride-confirmed", (rideData) => {
+        if (rideData._id === rideId) {
+          setCaptainDetails(rideData.captain);
+          setIsSearching(false);
+          toast.success("Captain assigned! 🚖");
+        }
       });
-    }
 
-    return () => {
-      socket.off(`ride-confirmed-${rideId}`); // Cleanup event listener
-    };
+      return () => socket.off("ride-confirmed");
+    }
   }, [rideId]);
 
   /** Debounced Function to Fetch Location Suggestions */
@@ -211,19 +211,12 @@ function HomeBody() {
 
   const handleCreateRide = async (vehicleType, price) => {
     setCreatingRide(true);
-    setIsSearching(true)
+    setIsSearching(true);
 
     try {
       const { data } = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/rides/create`,
-        {
-          pickup,
-          destination,
-          pickupCoords: markers[0],
-          destinationCoords: markers[1],
-          vehicleType,
-          fare: price,
-        },
+        { pickup, destination, pickupCoords: markers[0], destinationCoords: markers[1], vehicleType, fare: price },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -232,15 +225,10 @@ function HomeBody() {
         setIsSearching(false);
         return;
       }
-      // console.log(data)
-      setRideId(data.rideId); // Store the ride ID to listen for acceptance
-      toast.success(`Ride booked successfully! Ride ID: ${data.rideId}`);
 
-      // Store ride details in local storage
+      setRideId(data.rideId);
       localStorage.setItem("rideDetails", JSON.stringify(data));
-      setIsSearching(false)
-      // Listen for captain assignment
-      listenForCaptain(data.rideId);
+      toast.success(`Ride booked successfully!`);
     } catch (error) {
       toast.error("Error creating ride.");
       setIsSearching(false);
@@ -248,7 +236,7 @@ function HomeBody() {
       setCreatingRide(false);
     }
   };
-
+  
   return (
     <div className="flex flex-col py-8 px-8 md:flex-row space-y-4 md:space-y-0 md:space-x-4 h-[90vh]">
       <LocationInput

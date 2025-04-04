@@ -1,7 +1,11 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 const RideOptions = ({captainDetails,isSearching,fareData,handleCreateRide,creatingRide}) => {
-    // console.log(isSearching)
+  useEffect(() => {
+    if (captainDetails) {
+      console.log("Captain Details Updated:", captainDetails);
+    }
+  }, [captainDetails]);
   return (
     <div className=' w-1/4'>
          <div className="flex flex-col gap-4">
