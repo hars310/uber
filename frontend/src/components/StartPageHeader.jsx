@@ -33,7 +33,9 @@ const StartPageHeader = () => {
               lastName: response.data.fullname.lastname,
             },
             email: response.data.email,
+            _id: response.data._id,
           };
+          
 
           localStorage.setItem("user", JSON.stringify(userData)); // Save user in local storage
           setUser(userData);

@@ -65,4 +65,6 @@ router.post(
   rideController.endRide
 );
 
+router.get('/:rideId', authMiddleware.authUser, rideController.getRideById);
+
 module.exports = router;

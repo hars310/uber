@@ -2,17 +2,19 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { io } from "socket.io-client";
-import Map from "./Map"; // Importing the reusable Map component
+import Map from "./Map";
+import socket from '../socket/socket.js'; // ✅ import socket instance
 
 const CaptainDashboard = () => {
-  const [rides, setRides] = useState([]); // Store pending rides
-  const [loading, setLoading] = useState(false); // Handle loading state
-  const[rideStatus,setRideStatus] = useState("pending");
-  const [selectedRide, setSelectedRide] = useState(null); // Store confirmed ride details
-  const [route, setRoute] = useState(null); // Store route details for confirmed ride
+  const [rides, setRides] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [rideStatus, setRideStatus] = useState("pending");
+  const [selectedRide, setSelectedRide] = useState(null);
+  const [route, setRoute] = useState(null);
+  const [sockets, setSocket] = useState(null); // ✅ manage socket state
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
+  const captainId = localStorage.getItem("captainId");
 
   useEffect(() => {
     if (!token) {
@@ -21,10 +23,29 @@ const CaptainDashboard = () => {
   }, [token, navigate]);
 
   useEffect(() => {
-    fetchRides();
+    async function getCaptainId() {
+      const captainDetails = await axios.get(
+        "http://localhost:4000/captains/profile",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      // console.log(captainDetails)
+      localStorage.setItem("captainId", captainDetails.data.captain._id);
+    }
+    if (!captainId) {
+      getCaptainId();
+    }
+  }, [captainId]);
 
-    // Initialize WebSocket connection for real-time ride updates
-    const socket = io("http://localhost:4000");
+  useEffect(() => {
+    fetchRides();
+    setSocket(socket);
+
+    socket.connect(); // important if you're using autoConnect: false
+
+    socket.emit("join", { userId: captainId, userType: "captain" });
+
     socket.on("new-ride", (newRide) => {
       if (!selectedRide) {
         setRides((prevRides) => [...prevRides, newRide]);
@@ -32,18 +53,19 @@ const CaptainDashboard = () => {
       }
     });
 
-    return () => socket.disconnect();
+    return () => {
+      socket.off("new-ride");
+      socket.disconnect(); // disconnect on unmount
+    };
   }, []);
 
-  // Fetch pending rides from the server
   const fetchRides = async () => {
-    if (selectedRide) return; // Prevent fetching new rides after confirmation
+    if (selectedRide) return;
     setLoading(true);
     try {
       const response = await axios.get("http://localhost:4000/rides/pending", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      // console.log(response.data)
       setRides(response.data);
     } catch (error) {
       console.error("Error fetching rides", error);
@@ -53,14 +75,18 @@ const CaptainDashboard = () => {
     }
   };
 
-  // Convert pickup/destination names to coordinates using OpenStreetMap API
   const getCoordinates = async (address) => {
     try {
       const response = await axios.get(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          address
+        )}`
       );
       if (response.data.length > 0) {
-        return [parseFloat(response.data[0].lat), parseFloat(response.data[0].lon)];
+        return [
+          parseFloat(response.data[0].lat),
+          parseFloat(response.data[0].lon),
+        ];
       } else {
         toast.error(`No coordinates found for ${address}`);
         return null;
@@ -72,8 +98,7 @@ const CaptainDashboard = () => {
     }
   };
 
-  // Handle ride confirmation
-  const confirmRide = async (rideId, pickup, destination,fare) => {
+  const confirmRide = async (rideId, pickup, destination, fare) => {
     setLoading(true);
     try {
       const response = await axios.post(
@@ -81,10 +106,7 @@ const CaptainDashboard = () => {
         { rideId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      // console.log(response)
-      // Get coordinates for pickup & destination
-      setRideStatus(response.data.status)
-      // console.log(response.data)
+
       const pickupCoords = await getCoordinates(pickup);
       const destinationCoords = await getCoordinates(destination);
 
@@ -93,9 +115,35 @@ const CaptainDashboard = () => {
         return;
       }
 
-      // Store ride details & fetch route
-      setSelectedRide({ rideId, pickup, destination,user:response.data.user.fullname.firstname , pickupCoords, destinationCoords,fare ,rideStatus});
-      setRides([]); // Clear all other rides
+      // const captainId = localStorage.getItem("captainId");
+      const userId = response.data.user._id;
+
+      const confirmedRideData = {
+        rideId,
+        userId,
+        captainId,
+        status: "confirmed",
+      };
+      // console.log(confirmedRideData)
+
+      // ✅ Emit to socket that ride is confirmed
+      if (socket) {
+        socket.emit("ride-confirmed", confirmedRideData);
+      }
+
+      setRideStatus(response.data.status);
+      setSelectedRide({
+        rideId,
+        pickup,
+        destination,
+        user: response.data.user.fullname.firstname,
+        pickupCoords,
+        destinationCoords,
+        fare,
+        rideStatus: response.data.status,
+      });
+
+      setRides([]);
       fetchRoute(pickupCoords, destinationCoords);
       toast.success("Ride confirmed!");
     } catch (error) {
@@ -106,7 +154,6 @@ const CaptainDashboard = () => {
     }
   };
 
-  // Fetch route between pickup & destination
   const fetchRoute = async (pickupCoords, destinationCoords) => {
     try {
       const response = await axios.get(
@@ -123,7 +170,6 @@ const CaptainDashboard = () => {
     }
   };
 
-  // Handle ride start
   const startRide = async (rideId) => {
     const otp = prompt("Enter OTP to start ride:");
     if (!otp) return;
@@ -135,7 +181,7 @@ const CaptainDashboard = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       toast.success("Ride started!");
-      setRideStatus('ongoing')
+      setRideStatus("ongoing");
     } catch (error) {
       console.error("Error starting ride", error);
       toast.error("Invalid OTP or failed to start ride");
@@ -144,22 +190,21 @@ const CaptainDashboard = () => {
     }
   };
 
-  // Handle ride completion
   const endRide = async (rideId) => {
     setLoading(true);
     try {
-      const res  = await axios.post(
+      const res = await axios.post(
         "http://localhost:4000/rides/end-ride",
         { rideId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if(res.data.status==="completed"){
+      if (res.data.status === "completed") {
         setSelectedRide("completed");
         toast.success("Ride completed!");
         setRoute(null);
         fetchRides();
-      }else{
-        toast.error("ride not completed")
+      } else {
+        toast.error("Ride not completed");
       }
     } catch (error) {
       console.error("Error ending ride", error);
@@ -168,79 +213,98 @@ const CaptainDashboard = () => {
       setLoading(false);
     }
   };
-  // console.log(selectedRide?.user)
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold">Captain Dashboard</h1>
-      {loading && <p className="text-blue-500">Loading rides...</p>}
-
-      {/* Show only the confirmed ride */}
-      {selectedRide ? (
-        <div className="w-full  flex flex-row p-4 mb-2">
-         <div className="border shadow-md p-4 w-1/3 h-fit rounded-md ">
-         <h2 className="text-xl font-bold">Confirmed Ride</h2>
-          <p><strong>Customer:</strong> {selectedRide.user}</p>
-          <p><strong>Pickup:</strong> {selectedRide.pickup}</p>
-          <p><strong>Destination:</strong> {selectedRide.destination}</p>
-          <p><strong>Fare:</strong> ₹{selectedRide.fare}</p>
-          {rideStatus === "accepted" && (
-            <button
-              onClick={() => startRide(selectedRide.rideId)}
-              className="bg-green-600 text-white font-bold px-4 py-2 mt-2 rounded"
-            >
-              Start Ride
-            </button>
-          )}
-          {rideStatus === "ongoing" && (
-            <button
-              onClick={() => endRide(selectedRide.rideId)}
-              className="bg-red-500 text-white px-4 py-2 mt-2 rounded"
-            >
-              End Ride
-            </button>
-          )}
-         </div>
-
-          {/* Show Map with Route */}
-          
-          {route && (
-            <div className=" px-10">
-              {/* <h2 className="text-xl font-bold">Route Map</h2> */}
-              <Map
-                center={selectedRide.pickupCoords}
-                route={route}
-                markers={[selectedRide.pickupCoords, selectedRide.destinationCoords]}
-                mapStyles={{ height: "85vh", width: "65vw" }}
-              />
-            </div>
-          )}
-          
-        </div>
-      ) : (
-        // List available rides if no ride is confirmed
-        <div className="mt-4 flex flex-col px-6 py-12 gap-2">
-          <p className="text-xl font-bold">Available requests for you</p>
-          {rides.length === 0 ? (
-            <p>No available rides</p>
-          ) : (
-            rides.map((ride) => (
-              <div key={ride._id} className="border p-4 mb-2 shadow-md w-1/3 rounded-md">
-                <p><strong>Pickup:</strong> {ride.pickup}</p>
-                <p><strong>Destination:</strong> {ride.destination}</p>
-                <p><strong>Fare:</strong> ₹{ride.fare}</p>
+    <div className="">
+      <div className="p-4">
+        <h1 className="text-2xl font-bold">Captain Dashboard</h1>
+        {loading && <p className="text-blue-500">Loading rides...</p>}
+        {selectedRide ? (
+          <div className="w-full  flex flex-row p-4 mb-2">
+            <div className="border shadow-md p-4 w-1/3 h-fit rounded-md ">
+              <h2 className="text-xl font-bold">Confirmed Ride</h2>
+              <p>
+                <strong>Customer:</strong> {selectedRide.user}
+              </p>
+              <p>
+                <strong>Pickup:</strong> {selectedRide.pickup}
+              </p>
+              <p>
+                <strong>Destination:</strong> {selectedRide.destination}
+              </p>
+              <p>
+                <strong>Fare:</strong> ₹{selectedRide.fare}
+              </p>
+              {rideStatus === "accepted" && (
                 <button
-                  onClick={() => confirmRide(ride._id, ride.pickup, ride.destination,ride.fare)}
-                  className="bg-zinc-900 text-white px-4 py-2 mt-2 rounded cursor-pointer"
+                  onClick={() => startRide(selectedRide.rideId)}
+                  className="bg-green-600 text-white font-bold px-4 py-2 mt-2 rounded"
                 >
-                  Confirm Ride
+                  Start Ride
                 </button>
+              )}
+              {rideStatus === "ongoing" && (
+                <button
+                  onClick={() => endRide(selectedRide.rideId)}
+                  className="bg-red-500 text-white px-4 py-2 mt-2 rounded"
+                >
+                  End Ride
+                </button>
+              )}
+            </div>
+            {route && (
+              <div className=" px-10">
+                <Map
+                  center={selectedRide.pickupCoords}
+                  route={route}
+                  markers={[
+                    selectedRide.pickupCoords,
+                    selectedRide.destinationCoords,
+                  ]}
+                  mapStyles={{ height: "85vh", width: "65vw" }}
+                />
               </div>
-            ))
-            
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col px-6 py-6 gap-2">
+            <p className="text-xl font-bold">Available requests for you</p>
+            {rides.length === 0 ? (
+              <p>No available rides</p>
+            ) : (
+              rides.map((ride) => (
+                <div
+                  key={ride._id}
+                  className="border p-4 mb-2 shadow-md w-1/3 rounded-md"
+                >
+                  <p>
+                    <strong>Pickup:</strong> {ride.pickup}
+                  </p>
+                  <p>
+                    <strong>Destination:</strong> {ride.destination}
+                  </p>
+                  <p>
+                    <strong>Fare:</strong> ₹{ride.fare}
+                  </p>
+                  <button
+                    onClick={() =>
+                      confirmRide(
+                        ride._id,
+                        ride.pickup,
+                        ride.destination,
+                        ride.fare
+                      )
+                    }
+                    className="bg-zinc-900 text-white px-4 py-2 mt-2 rounded cursor-pointer"
+                  >
+                    Confirm Ride
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

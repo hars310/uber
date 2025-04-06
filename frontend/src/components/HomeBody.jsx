@@ -1,14 +1,14 @@
-import React, { useContext, useState, useEffect, useCallback } from "react";
+import React, { useContext, useState,useRef, useEffect, useCallback } from "react";
 import Map from "./Map";
 import { TripDataContext } from "../context/TripContext";
 import axios from "axios";
 import debounce from "lodash.debounce";
 import "remixicon/fonts/remixicon.css";
 import { toast } from "react-hot-toast";
-import { io } from "socket.io-client";
+import socket from '../socket/socket.js';
 import LocationInput from "./LocationInput";
 import RideOptions from "./RideOptions";
-const socket = io(import.meta.env.VITE_BASE_URL);
+
 
 function HomeBody() {
   const { tripDetails, setTripDetails } = useContext(TripDataContext);
@@ -36,9 +36,10 @@ function HomeBody() {
   const [isSearching, setIsSearching] = useState(false);
   const [captainDetails, setCaptainDetails] = useState(null);
   const [rideId, setRideId] = useState(null);
-
+  const rideIdRef = useRef(null); 
   // const isTripSelected = markers[0] && markers[1];
   const token = localStorage.getItem("token");
+  const user = localStorage.getItem("user"); 
   const val = localStorage.getItem("vehicleoptions");
   const mapContainerClass = tripDetails
     ? "w-1/3 transition-all duration-300"
@@ -61,19 +62,68 @@ function HomeBody() {
     }
   }, []);
 
-  useEffect(() => {
-    if (rideId) {
-      socket.on("ride-confirmed", (rideData) => {
-        if (rideData._id === rideId) {
-          setCaptainDetails(rideData.captain);
-          setIsSearching(false);
-          toast.success("Captain assigned! 🚖");
-        }
-      });
+ /** Join socket room once on mount */
+ useEffect(() => {
+  if (user._id) {
+    setSocket(socket);
+    socket.connect();
+    socket.emit("join", { userId: user._id, userType: "user" });
+  }
 
-      return () => socket.off("ride-confirmed");
+  return () => {
+    socket.off("ride-confirmed");
+  };
+}, []);
+  
+/** Handle captain assignment */
+useEffect(() => {
+  if (!rideId) return;
+
+  const handleRideConfirmed = async (rideData) => {
+    if (rideData.rideId !== rideId) return; // compare with real rideId, not ref
+
+    try {
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/captains/${rideData.captainId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      console.log(data)
+      setCaptainDetails(data.captain);
+      setIsSearching(false);
+      toast.success("Captain assigned! 🚖");
+    } catch (err) {
+      toast.error("Failed to fetch ride details");
+      setIsSearching(false);
     }
+  };
+
+  socket.on("ride-confirmed", handleRideConfirmed);
+
+  return () => {
+    socket.off("ride-confirmed", handleRideConfirmed);
+  };
+}, [rideId]); 
+
+
+
+  useEffect(() => {
+    rideIdRef.current = rideId;
   }, [rideId]);
+  
+  useEffect(() => {
+    if (!isSearching || captainDetails) return;
+  
+    const timeout = setTimeout(() => {
+      setIsSearching(false);
+      toast.error("No captains found. Try again.");
+    }, 20000); // 20 seconds
+  
+    return () => clearTimeout(timeout);
+  }, [isSearching, captainDetails]);
+  
+
 
   /** Debounced Function to Fetch Location Suggestions */
   const debouncedFetchSuggestions = useCallback(
@@ -157,11 +207,12 @@ function HomeBody() {
       toast.error("Please select both pickup and destination locations");
       return;
     }
-    // console.log(fareData)
-    if (fareData == []) {
-      setRideOptionsVisible(true);
-      return;
-    }
+    console.log(fareData)
+    // if (!fareData || fareData.length === 0 || Object.keys(fareData).length === 0) {
+    //   setRideOptionsVisible(true);
+    //   return;
+    // }
+    
 
     setFareLoading(true);
     setIsSearching(true);
@@ -216,7 +267,14 @@ function HomeBody() {
     try {
       const { data } = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/rides/create`,
-        { pickup, destination, pickupCoords: markers[0], destinationCoords: markers[1], vehicleType, fare: price },
+        {
+          pickup,
+          destination,
+          pickupCoords: markers[0],
+          destinationCoords: markers[1],
+          vehicleType,
+          fare: price,
+        },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -225,10 +283,10 @@ function HomeBody() {
         setIsSearching(false);
         return;
       }
-
+      // console.log(data)
       setRideId(data.rideId);
       localStorage.setItem("rideDetails", JSON.stringify(data));
-      toast.success(`Ride booked successfully!`);
+      // toast.success(`Ride booked successfully!`);
     } catch (error) {
       toast.error("Error creating ride.");
       setIsSearching(false);
@@ -236,7 +294,7 @@ function HomeBody() {
       setCreatingRide(false);
     }
   };
-  
+
   return (
     <div className="flex flex-col py-8 px-8 md:flex-row space-y-4 md:space-y-0 md:space-x-4 h-[90vh]">
       <LocationInput
@@ -249,19 +307,16 @@ function HomeBody() {
         handleSelectLocation={handleSelectLocation}
         handleFindRide={handleFindRide}
       />
-     
-    
-        <RideOptions
+
+      <RideOptions
         captainDetails={captainDetails}
         isSearching={isSearching}
         fareData={fareData}
         handleCreateRide={handleCreateRide}
         creatingRide={creatingRide}
       />
-      
-     
 
-     <div className={mapContainerClass}>
+      <div className={mapContainerClass}>
         <Map
           key={mapKey}
           center={mapCenter}
