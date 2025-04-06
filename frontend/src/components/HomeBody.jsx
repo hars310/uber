@@ -249,15 +249,19 @@ function HomeBody() {
         handleSelectLocation={handleSelectLocation}
         handleFindRide={handleFindRide}
       />
-      <RideOptions
+     
+    
+        <RideOptions
         captainDetails={captainDetails}
         isSearching={isSearching}
         fareData={fareData}
         handleCreateRide={handleCreateRide}
         creatingRide={creatingRide}
       />
+      
+     
 
-      <div className={mapContainerClass}>
+     <div className={mapContainerClass}>
         <Map
           key={mapKey}
           center={mapCenter}
