@@ -32,14 +32,15 @@ function HomeBody() {
   const [fareData, setFareData] = useState([]);
   const [fareLoading, setFareLoading] = useState(false);
   const [creatingRide, setCreatingRide] = useState(false);
-
+  const [sockets, setSocket] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
   const [captainDetails, setCaptainDetails] = useState(null);
   const [rideId, setRideId] = useState(null);
   const rideIdRef = useRef(null); 
   // const isTripSelected = markers[0] && markers[1];
   const token = localStorage.getItem("token");
-  const user = localStorage.getItem("user"); 
+  const user = localStorage.getItem("user");
+  const parsedUser = JSON.parse(user);
   const val = localStorage.getItem("vehicleoptions");
   const mapContainerClass = tripDetails
     ? "w-1/3 transition-all duration-300"
@@ -64,47 +65,54 @@ function HomeBody() {
 
  /** Join socket room once on mount */
  useEffect(() => {
-  if (user._id) {
+  if (parsedUser._id) {
     setSocket(socket);
     socket.connect();
-    socket.emit("join", { userId: user._id, userType: "user" });
+    socket.emit("join", { userId: parsedUser._id, userType: "user" });
   }
 
   return () => {
-    socket.off("ride-confirmed");
+    socket.disconnect(); 
   };
 }, []);
   
 /** Handle captain assignment */
+const handleRideConfirmed = async (rideData) => {
+  console.log("Socket event received in HomeBody:", rideData);
+  if (rideData.rideId !== rideIdRef.current) return;
+
+  try {
+    const { data } = await axios.get(
+      `${import.meta.env.VITE_BASE_URL}/rides/${rideData.rideId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    // console.log(data)
+    localStorage.setItem("captainDetails", JSON.stringify(data.captain));
+    setRideOptionsVisible(false);
+    setCaptainDetails(data.captain);
+    setIsSearching(false);
+    toast.success("Captain assigned! 🚖");
+  } catch (err) {
+    toast.error("Failed to fetch ride details");
+    setIsSearching(false);
+  }
+};
+
 useEffect(() => {
-  if (!rideId) return;
-
-  const handleRideConfirmed = async (rideData) => {
-    if (rideData.rideId !== rideId) return; // compare with real rideId, not ref
-
-    try {
-      const { data } = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/captains/${rideData.captainId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      console.log(data)
-      setCaptainDetails(data.captain);
-      setIsSearching(false);
-      toast.success("Captain assigned! 🚖");
-    } catch (err) {
-      toast.error("Failed to fetch ride details");
-      setIsSearching(false);
-    }
-  };
-
-  socket.on("ride-confirmed", handleRideConfirmed);
+  const rideConfirmedHandler = (data) => handleRideConfirmed(data);
+  
+  socket.on("ride-confirmed", rideConfirmedHandler);
 
   return () => {
-    socket.off("ride-confirmed", handleRideConfirmed);
+    socket.off("ride-confirmed", rideConfirmedHandler);
   };
-}, [rideId]); 
+}, [handleRideConfirmed]); 
+
+  
+
+  
 
 
 
@@ -207,7 +215,7 @@ useEffect(() => {
       toast.error("Please select both pickup and destination locations");
       return;
     }
-    console.log(fareData)
+   
     // if (!fareData || fareData.length === 0 || Object.keys(fareData).length === 0) {
     //   setRideOptionsVisible(true);
     //   return;
@@ -224,6 +232,7 @@ useEffect(() => {
         destinationCoords: markers[1],
         route,
       };
+      
 
       // console.log(pickup,destination,tripData.pickupCoords,tripData.destinationCoords)
 
@@ -242,7 +251,7 @@ useEffect(() => {
       // console.log(data);
       if (!data || data.error) {
         console.error("Error fetching fare:", data);
-        alert("Failed to fetch fare. Try again.");
+        toast.error("Failed to fetch fare. Try again.");
         return;
       }
 
@@ -285,6 +294,7 @@ useEffect(() => {
       }
       // console.log(data)
       setRideId(data.rideId);
+      rideIdRef.current = data.rideId;
       localStorage.setItem("rideDetails", JSON.stringify(data));
       // toast.success(`Ride booked successfully!`);
     } catch (error) {
@@ -309,7 +319,7 @@ useEffect(() => {
       />
 
       <RideOptions
-        captainDetails={captainDetails}
+        // captainDetails={captainDetails}
         isSearching={isSearching}
         fareData={fareData}
         handleCreateRide={handleCreateRide}

@@ -16,6 +16,7 @@ const CaptainDashboard = () => {
   const navigate = useNavigate();
   const captainId = localStorage.getItem("captainId");
 
+
   useEffect(() => {
     if (!token) {
       navigate("/captain-login");
@@ -36,9 +37,10 @@ const CaptainDashboard = () => {
     if (!captainId) {
       getCaptainId();
     }
-  }, [captainId]);
+  }, []);
 
   useEffect(() => {
+    if (!captainId) return;
     fetchRides();
     setSocket(socket);
 

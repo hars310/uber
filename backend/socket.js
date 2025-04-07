@@ -23,6 +23,7 @@ function initializeSocket(server) {
         socket.on('join', async (data) => {
             // console.log(data," join event");
             const { userId, userType } = data;
+            // console.log(userId, userType, "userId and userType");
 
             if (!userId || !userType) return;
             if (!mongoose.Types.ObjectId.isValid(userId)) {
@@ -40,7 +41,7 @@ function initializeSocket(server) {
 
                 // Save in memory
                 connectedUsers.set(userId.toString(), socket.id);
-                console.log(connectedUsers)
+                // console.log(connectedUsers)
                 console.log(`${userType} ${userId} joined with socket ${socket.id}`);
             } catch (err) {
                 console.error(`Error in join:`, err);
@@ -71,7 +72,7 @@ function initializeSocket(server) {
         socket.on('ride-confirmed', async ({ rideId, userId, captainId, status }) => {
             console.log(`Ride confirmed: ${rideId} by captain ${captainId}`);
             // console.log(rideId, userId, captainId, status)
-            const socketId = connectedUsers.get(captainId.toString());
+            const socketId = connectedUsers.get(userId.toString());
             // console.log(socketId, "socketId");
             if (socketId) {
                 io.to(socketId).emit('ride-confirmed', {

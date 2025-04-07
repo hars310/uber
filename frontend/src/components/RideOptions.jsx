@@ -1,13 +1,16 @@
 import React, { useEffect } from "react";
 
 const RideOptions = ({
-  captainDetails,
+  // captainDetails,
   isSearching,
   fareData,
   handleCreateRide,
   creatingRide,
 }) => {
   // time out after 5 seconds to get ride details
+  const captainDetails = localStorage.getItem("captainDetails")
+    ? JSON.parse(localStorage.getItem("captainDetails"))
+    : null;
 
   return (
     <div className=" w-1/4 h-fit border rounded-md p-4 border-gray-200 shadow-md">
@@ -29,16 +32,27 @@ const RideOptions = ({
         ) : captainDetails ? (
           <div className="border p-4 rounded-lg shadow-md flex flex-col items-center">
             <img
-              src={captainDetails.profileImage || "/default-captain.png"}
+              src={captainDetails.profileImage || "https://100k-faces.glitch.me/random-image"}
               alt="Captain"
               className="w-24 h-24 rounded-full mb-2"
             />
-            <h3 className="text-lg font-bold">{captainDetails.name}</h3>
-            <p className="text-sm text-gray-500">
+            <h3 className="text-lg font-bold">{captainDetails.fullname.firstname} {captainDetails.fullname.lastname}</h3>
+            {/* <p className="text-sm text-gray-500">
               Rating: {captainDetails.rating || "N/A"} ⭐
+            </p> */}
+            
+            <p className="text-sm text-center text-gray-500">
+              Vehicle Color: {captainDetails.vehicle.color}
             </p>
-            <p className="text-sm text-gray-500">
-              Vehicle: {captainDetails.vehicleType}
+            <p className="text-sm text-center text-gray-500">
+              Vehicle Capacity: {captainDetails.vehicle.capacity}
+            </p>
+
+            <p className="text-sm text-center text-gray-500">
+              Vehicle Plate: {captainDetails.vehicle.plate}
+            </p>
+            <p className="text-sm text-center text-gray-500">
+              Vehicle: {captainDetails.vehicle.vehicleType}
             </p>
             <p className="text-md font-semibold">
               Arriving in {captainDetails.eta || "5 mins"}

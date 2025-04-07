@@ -148,7 +148,7 @@ module.exports.getRideById = async (req, res) => {
     const { rideId } = req.params;
 
     try {
-        const ride = await rideModel.findById(rideId);
+        const ride = await rideModel.findById(rideId).populate('user').populate('captain');
 
         if (!ride) {
             return res.status(404).json({ message: "Ride not found" });
