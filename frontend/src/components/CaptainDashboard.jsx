@@ -26,7 +26,7 @@ const CaptainDashboard = () => {
   useEffect(() => {
     async function getCaptainId() {
       const captainDetails = await axios.get(
-        "http://localhost:4000/captains/profile",
+        `${import.meta.env.VITE_BASE_URL}/captains/profile`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -65,7 +65,7 @@ const CaptainDashboard = () => {
     if (selectedRide) return;
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:4000/rides/pending", {
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/rides/pending`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRides(response.data);
@@ -104,7 +104,7 @@ const CaptainDashboard = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:4000/rides/confirm",
+        `${import.meta.env.VITE_BASE_URL}/rides/confirm`,
         { rideId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -178,7 +178,7 @@ const CaptainDashboard = () => {
 
     setLoading(true);
     try {
-      await axios.get("http://localhost:4000/rides/start-ride", {
+      await axios.get(`${import.meta.env.VITE_BASE_URL}/rides/start-ride`, {
         params: { rideId, otp },
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -196,7 +196,7 @@ const CaptainDashboard = () => {
     setLoading(true);
     try {
       const res = await axios.post(
-        "http://localhost:4000/rides/end-ride",
+        `${import.meta.env.VITE_BASE_URL}/rides/end-ride`,
         { rideId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
