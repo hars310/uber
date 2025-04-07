@@ -36,7 +36,7 @@ const UserRegister = () => {
         localStorage.setItem("token", data.token);
         toast.success("Account created successfully");
         setTimeout(() => {
-          navigate("/home");
+          navigate("/");
         }, 300);
       }
 
